@@ -1,2 +1,2 @@
-# LensGenerator
-A simple blender addon for making a procedural lens mesh
+# Lens Generator
+A blender addon for making procedural, editable spherical lenses
