@@ -250,11 +250,11 @@ def updateMesh(self, context):
 
 #properties
 bpy.types.Object.res_a = IntProperty(name="Circular Resoultion",
-    description="Resoultion phi",
+    description="Resoultion around",
     default=32,
     update=updateMesh)
 bpy.types.Object.res_b = IntProperty(name="Radius Resoultion",
-    description="Resoultion theta",
+    description="Resoultion from center",
     default=16,
     update=updateMesh)
 bpy.types.Object.diameter = FloatProperty(name="Diameter",
