@@ -4,7 +4,7 @@ bl_info = {
     "name": "Lens",
     "author": "Aaron Buchler",
     "version": (1, 0, 0),
-    "blender": (2, 77, 0),
+    "blender": (2, 80, 0),
     "location": "View3D > Add > Mesh",
     "description": "Add an lens object with a configurable focal length",
     "warning": "",
@@ -158,7 +158,7 @@ def makeMaterial(ior=1.52):
     material.use_nodes = True
     
     #remove default
-    material.node_tree.nodes.remove(material.node_tree.nodes.get('Diffuse BSDF'))
+    material.node_tree.nodes.remove(material.node_tree.nodes.get('Principled BSDF'))
     #add node
     material_output = material.node_tree.nodes.get('Material Output')
     shader = material.node_tree.nodes.new('ShaderNodeBsdfRefraction')
@@ -171,13 +171,13 @@ def initMesh(self, context):
     #make object
     lensMesh = bpy.data.meshes.new('lensmesh')
     lensObj = bpy.data.objects.new('Lens', lensMesh)
-    bpy.context.scene.objects.link(lensObj)
-    lensObj.location=bpy.context.scene.cursor_location
+    bpy.context.scene.collection.objects.link(lensObj)
+    lensObj.location=bpy.context.scene.cursor.location
     
     #select
     bpy.ops.object.select_all(action='DESELECT')
-    lensObj.select = True
-    bpy.context.scene.objects.active = lensObj
+    lensObj.select_set(state=True)
+    bpy.context.view_layer.objects.active = lensObj
     
     #set properties
     lensObj["is_lens"] = True
@@ -317,14 +317,17 @@ def draw_focal_length(layout, context):
     ifl = (ior-1) * ((1/R1) - (1/R2) + (((ior-1)*thickness) / (ior * R1 + R2)))
     fl = 1 / ifl
     
-    layout.label("Focal Length: " + str(round(fl * 1000, 3)) + " mm")
+    layout.label(text="Focal Length: " + str(round(fl * 1000, 3)) + " mm")
 
 class Lens(bpy.types.Panel):
     bl_idname = "Lens"
     bl_label = "Lens"
-    bl_space_type = "PROPERTIES" # change
-    bl_region_type = "WINDOW" # change
-    bl_context = "modifier" # change
+    #bl_space_type = "PROPERTIES"
+    #bl_region_type = "WINDOW"
+    #bl_context = "modifier"
+    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     
     def draw(self, context):
         props = context.object
@@ -334,11 +337,12 @@ class Lens(bpy.types.Panel):
         row.prop(props, 'res_b')
         layout.prop(props, 'diameter')
         layout.prop(props, 'thickness')
-        layout.prop(props, 'ior')
         layout.prop(props, 'curvature')
         layout.prop(props, 'curvature_b')
         layout.prop(props, 'curvatureRatio')
-        layout.prop(props, 'make_material')
+        row = layout.row()
+        row.prop(props, 'make_material')
+        row.prop(props, 'ior')
         
         draw_focal_length(layout, context)
 
@@ -357,10 +361,16 @@ def menu_func(self, context):
     self.layout.operator(LensAdd.bl_idname, text="Add lens mesh",
                         icon='PLUGIN')
 
+classes = (Lens, LensAdd)
+
 def register():
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_mesh_add.append(menu_func)
+    from bpy.utils import register_class
+    for cls in classes:
+        register_class(cls)
+    bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
 
 def unregister():
-    bpy.types.INFO_MT_mesh_add.remove(menu_func)
-    bpy.utils.unregister_module(__name__)
+    from bpy.utils import unregister_class
+    for cls in reversed(classes):
+        unregister_class(cls)
+    bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
