@@ -314,7 +314,7 @@ def draw_focal_length(layout, context):
     
     # lensmaker's equation
     R2 = -R2
-    ifl = (ior-1) * ((1/R1) - (1/R2) + (((ior-1)*thickness) / (ior * R1 + R2)))
+    ifl = (ior-1) * ((1/R1) - (1/R2) + (((ior-1)*thickness) / (ior * R1 * R2)))
     fl = 1 / ifl
     
     layout.label(text="Focal Length: " + str(round(fl * 1000, 3)) + " mm")
